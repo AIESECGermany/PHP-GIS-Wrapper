@@ -94,6 +94,9 @@ class APIEndpoint implements \ArrayAccess
      */
     public function offsetGet($offset)
     {
+        if(!isset($this->params[$offset])){
+            $this->params[$offset] = new Param();
+        }
         return $this->params[$offset];
     }
 
