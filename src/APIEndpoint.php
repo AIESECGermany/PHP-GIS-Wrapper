@@ -31,23 +31,35 @@ class APIEndpoint implements \ArrayAccess
 
         $this->api = API::getInstance();
         $this->subs = array();
-		$this->params = array();
+		$this->params = new Param();
     }
 
 	public function get(){
-		return $this->api->get(implode('/', $this->parts));
+		return $this->api->get(
+            implode('/', $this->parts),
+            $this->params->value()
+        );
 	}
 
 	public function patch(){
-		return $this->api->patch(implode('/', $this->parts), json_encode($this->params));
+		return $this->api->patch(
+            implode('/', $this->parts),
+            json_encode($this->params->value())
+        );
 	}
 
 	public function post(){
-		return $this->api->post(implode('/', $this->parts), json_encode($this->params));
+		return $this->api->post(
+            implode('/', $this->parts),
+            json_encode($this->params->value())
+        );
 	}
 
 	public function delete(){
-		return $this->api->delete(implode('/', $this->parts), json_encode($this->params));
+		return $this->api->delete(
+            implode('/', $this->parts),
+            json_encode($this->params->value())
+        );
 	}
 
 	/**

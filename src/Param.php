@@ -18,10 +18,10 @@ class Param implements \ArrayAccess
     }
 
     public function value()
-    {
+    {           
     	$arr = [];
     	foreach ($this->values as $key => $value) {
-    		$arr[$key] = $value->value();
+            $arr[$key] = $value instanceof Param ? $value->value() : $value;
     	}
     	return $arr;
     }
