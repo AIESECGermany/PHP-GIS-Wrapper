@@ -3,89 +3,57 @@ namespace GISwrapper;
 
 /**
  * Class API
- * represents a part of the path which is not an data endpoint
+ * make requests to API
  *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @author Lukas Ehnle <lukas.ehnle@aiesec.de>
  * @package GISwrapper
- * @version 0.2
+ * @version 0.3
  */
 class API
 {
-    /**
-     * @var array
-     */
-    protected $_cache;
+	private static $instance;
 
-    /**
-     * @var array
-     */
-    protected $_subs;
+	private $auth;
 
-    /**
-     * @var AuthProvider
-     */
-    protected $_auth;
+	private $api;
 
-    /**
-     * @var array
-     */
-    protected $_pathParams;
-
-    /**
-     * API constructor.
-     * @param array $cache parsed swagger file for this api
-     * @param AuthProvider $auth
-     * @param array $pathParams array with values for dynamic parts of the path
-     */
-    public function __construct($cache, $auth, $pathParams = array())
+	private function __construct(AuthProvider $auth, String $baseUrl)
     {
-        $this->_cache = $cache;
-        $this->_subs = array();
-        $this->_auth = $auth;
-        $this->_pathParams = $pathParams;
+        $this->auth = $auth;
+        $this->api = new \RestClient([
+		    'base_url' => $baseUrl,
+		    'headers' => [
+		    	'Content-Type' => 'application/json'
+		    ]
+		]);
     }
 
-    /**
-     * @param mixed $name property name
-     * @return mixed|null value for the property
-     */
-    public function __get($name)
-    {
-        if(array_key_exists($name, $this->_cache['subs']) && !$this->_cache['subs'][$name]['dynamic']) {
-            if(!isset($this->_subs[$name])) {
-                $this->_subs[$name] = APISubFactory::factory($this->_cache['subs'][$name], $this->_auth);
-            }
-            return $this->_subs[$name];
-        } else {
-            trigger_error("Property " . $name . " does not exist.", E_USER_WARNING);
-            return null;
-        }
+    public function __call($name, $arguments){
+    	if( method_exists($this->api, $name) ){
+    		// add access token to requestUrl
+    		$arguments[0] .= '?access_token=' . $this->auth->getToken();
+    		
+    		$response = call_user_func_array([$this->api, $name], $arguments)->decode_response();
+    		if(isset($response->status)
+    			&& isset($response->status->code)
+    			&& $response->status->code == 401){
+    			//TODO: retry with new token on fail
+    		}
+    		return $response;
+    	}
     }
 
-    /**
-     * @param mixed $name property name
-     * @return bool indicating if there is a active instance of this property
-     */
-    public function __isset($name)
-    {
-        return isset($this->_subs[$name]);
+    public static function createInstance($auth = NULL, $baseUrl = 'https://gis-api.aiesec.org/v2'){
+    	if($auth instanceof AuthProvider){
+    		API::$instance = new API($auth, $baseUrl);
+    	}
     }
 
-    /**
-     * @param mixed $name property name
-     * deletes the current instance of the property
-     */
-    public function __unset($name) {
-        if(isset($this->_subs[$name])) {
-            unset($this->_subs[$name]);
-        }
+    public static function getInstance(){
+    	if(! API::$instance instanceof API){
+    		throw new \Error("API not instantiated yet.");
+    	}
+    	return API::$instance;
     }
 
-    /**
-     * @param mixed $name property name
-     * @return bool indicating if the property exists (this doesn't mean that there is a instance of the property). The existence of the instance is indicated by isset
-     */
-    public function exists($name) {
-        return (isset($this->_cache['subs'][$name]) && !$this->_cache['subs'][$name]['dynamic']);
-    }
 }

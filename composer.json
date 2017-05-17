@@ -1,16 +1,21 @@
 {
-    "name": "kjschubert/php-gis-wrapper",
+    "name": "aiesecgermany/php-gis-wrapper",
     "description": "PHP library to connect your projects with AIESEC's Global Information System",
     "authors": [
         {
             "name": "Karl Johann Schubert",
             "email": "karljohann@familieschubi.de"
+        },
+        {
+            "name": "Lukas Ehnke",
+            "email": "lukas.ehnle@aiesec.de"
         }
     ],
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.4.0",
-        "lib-curl": "*"
+        "lib-curl": "*",
+        "tcdent/php-restclient": "^0.1.6"
     },
     "autoload": {
         "psr-4": {
