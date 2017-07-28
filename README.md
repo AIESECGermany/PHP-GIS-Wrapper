@@ -75,7 +75,7 @@ $gis = new \GISwrapper\GIS($user);
 This new version does not need or support caching. As it does not parse a swagger file anymore.
 
 ## Data Access and Manipulation
-Please check the api documentation at http://apidocs.aies.ec/ to get to know which endpoints exists. (<b>Attention:</b> make sure to change the file to the docs.json from v1 to v2)
+Please check the api documentation at https://gis-api.aiesec.org/swagger to get to know which endpoints exists. (<b>Attention:</b> make sure to change the file to the docs.json from v1 to v2)
 
 Starting from your instance of the GIS (e.g. $gis) every part after /v2/ of the path is turned into an object.
 ```
