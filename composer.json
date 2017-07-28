@@ -17,6 +17,7 @@
             "url": "https://github.com/tcdent/php-restclient"
         }
     ],
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.4.0",
         "lib-curl": "*",
