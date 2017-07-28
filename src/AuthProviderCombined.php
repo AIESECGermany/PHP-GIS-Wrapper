@@ -172,7 +172,7 @@ class AuthProviderCombined implements AuthProvider {
             $this->_type = false;
 
             // run the GIS Auth Flow for OP
-            $this->GISauthFlow('https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=e34d5daf8c89172f7fabccbae8378eb3cb524cffc774c57afe2011b90d2e77e5');
+            $this->GISauthFlow('https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Faiesec.org%2Fauth&response_type=code&client_id=e305a9957ba043d9998a2369064635cab525b4dfb8a7c8eb39035451236ffb67');
 
             // if token is still not valid throw a exception
             if(!$this->getCurrentPerson()) {
