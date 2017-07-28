@@ -17,7 +17,7 @@ class API
 
 	private $api;
 
-    private $tries = 0;
+    private $retried = false;
 
 	private function __construct(AuthProvider $auth, String $baseUrl)
     {
@@ -34,21 +34,29 @@ class API
     public function __call($name, $arguments){
         // check if method exists on RestClient
     	if( method_exists($this->api, $name) ){
-    		// add access token to requestUrl
-    		$arguments[0] .= '?access_token=' . $this->auth->getToken();
+    		// add access token to requestUrl if first try, else replace with new token
+    		if(!$this->retried) {
+                $arguments[0] .= '?access_token=' . $this->auth->getToken();
+            } else {
+                preg_replace("/\?.*/", "?access_token=" . $this->auth->getNewToken(), $arguments[0]);
+            }
     		
             //call method on RestClient and decode the response, is decoded as json
             //call_user_func_array([onThisObject, methodName], arguments)
     		$response = call_user_func_array([$this->api, $name], $arguments)->decode_response();
-    		if(isset($response->status)
+    		
+            // retry if not authorized
+            if(isset($response->status)
     			&& isset($response->status->code)
-    			&& $response->status->code == 401
-                && $this->tries < 3){ // if call has already been made 2 times with new token, give up
-    			//TODO: retry with new token on fail
-    		} else {
-                throw new \Error("API not responding.");
+    			&& $response->status->code == 401){
+
+                $this->retried = true;
+                return call_user_func_array([$this, $name], $arguments);
+
+    		} else if($this->retried) {
+                throw new UnauthorizedException();
             }
-            $this->tries = 0;
+            $this->retried = false;
     		return $response;
     	} else {
             throw new OperationNotAvailableException();
