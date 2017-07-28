@@ -40,7 +40,9 @@ class API
     			//TODO: retry with new token on fail
     		}
     		return $response;
-    	}
+    	} else {
+            throw new OperationNotAvailableException();
+        }
     }
 
     public static function createInstance($auth = NULL, $baseUrl = 'https://gis-api.aiesec.org/v2'){
