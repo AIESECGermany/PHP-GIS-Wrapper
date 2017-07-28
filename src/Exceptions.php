@@ -38,15 +38,6 @@ class InvalidAuthResponseException extends \Exception {}
 class NoResponseException extends \Exception {}
 
 /**
- * Class InvalidSwaggerFormatException
- *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.2
- * @package GISwrapper
- */
-class InvalidSwaggerFormatException extends \Exception {}
-
-/**
  * Class RequirementsException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
