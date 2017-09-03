@@ -7,14 +7,25 @@ Version 0.3 is a partial rewrite with breaking changes in the acccess of endpoin
 
 - author: Lukas Ehnle <lukas.ehnle@aiesec.de>
 - author until v0.2.8: Karl Johann Schubert <karljohann@familieschubi.de>
-- version: 0.3
+- version: 0.3.1
 
 # Documentation
 
 ## Installation
-1. install composer (https://getcomposer.org/)
-2. `composer require aiesecgermany/php-gis-wrapper`
-3. require the composer autoloader in your scripts
+ - install [composer](https://getcomposer.org/)
+ - add the following to your `composer.json`:
+
+```json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/AIESECGermany/PHP-GIS-Wrapper"
+    }
+]
+```
+
+- `composer require aiesecgermany/php-gis-wrapper`
+- require the composer autoloader in your scripts
 
 ## AuthProviders
 The file `AuthProvider.php` provides an interface for Authentication Providers. The Purpose of an Authentication Provider is to provide an access token to access the GIS API.
@@ -164,6 +175,10 @@ $gis->opportunities = [
 ```
 
 # Changelog
+## 0.3.1
+- rewrite using [OP-Restclient](https://github.com/ocjojo/op-restclient).
+- re-implemented Iterator for paged results
+
 ## 0.3.0
 - rewrite that does not parse the swagger file, instead everything is allowed as an endpoint, so you have to take care to call the correct endpoints.
 
