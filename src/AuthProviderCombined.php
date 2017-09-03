@@ -5,7 +5,8 @@ namespace GISwrapper;
  * Class AuthProviderCombined
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.2
+ * @author Lukas Ehnle <me@ehnle.fyi>
+ * @version 0.3
  * @package GISwrapper
  */
 class AuthProviderCombined implements AuthProvider {
@@ -199,14 +200,13 @@ class AuthProviderCombined implements AuthProvider {
         curl_setopt($req, CURLOPT_COOKIEFILE, $this->_session);
         curl_setopt($req, CURLOPT_COOKIEJAR, $this->_session);
         curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
+        // set url
+        curl_setopt($req, CURLOPT_URL, $url);
 
-        // first check if we are working with an existing session, because if this fails we either need to run a normal login flow
+        // first check if we are working with an existing session, because if this fails we need to run a normal login flow
         if(file_exists($this->_session)) {
             $res = true;
             for($i = 0; $i < 3; $i++) {
-                // set url
-                curl_setopt($req, CURLOPT_URL, $url);
-
                 // run request
                 $res = curl_exec($req);
 
@@ -220,17 +220,17 @@ class AuthProviderCombined implements AuthProvider {
                         curl_close($req);
                         return true;
                     } catch (InvalidAuthResponseException $e) {
-                        // if there was no token, this can mean that the session was invalid, thereby break the loop and skip to normal login procedure
+                        // if there was no token, this can mean that the session was invalid.
+                        // break the loop and skip to normal login procedure
                         break;
                     }
                 }
             }
         }
 
-        // if we are still here we need to run a normal login, therefore we need a CSRF token first
+        // if we are still here we need to run a normal login, therefore we need a CSRF token
         $data = false;
         for($i = 0; $i < 3; $i++) {
-            curl_setopt($req, CURLOPT_URL, $url);
             $res = curl_exec($req);
             if($res !== false) {
                 // try to find csrf token in response
@@ -251,7 +251,7 @@ class AuthProviderCombined implements AuthProvider {
             throw new InvalidAuthResponseException("Did not get a CSRF token.");
         }
 
-        // through we ran the csrf request against the specific url our session is initiated and we can just perform an login
+        // because we ran the csrf request against this specific domain, our session is initiated and we can just perform the login
         for($i = 0; $i < 3; $i++) {
             // update the curl handle
             curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/users/sign_in');

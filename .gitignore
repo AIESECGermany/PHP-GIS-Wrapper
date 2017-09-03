@@ -3,3 +3,4 @@
 /vendor/
 /testing/
 composer.lock
+/examples/config.php

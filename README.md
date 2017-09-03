@@ -5,8 +5,6 @@ It gives you the possibility to access every resource in the GIS as if it would 
 
 Version 0.3 is a partial rewrite with breaking changes in the acccess of endpoints, please check the documentation and test your application, if you update.
 
-If you already used the PHP GIS Wrapper v0.1 please be aware that v0.2 is a complete rewrite. There are a lot of architectural changes whereby the update of your projects is most probably not that simple. The new version definitely gives you a performance boost and brings many new possibilities. Please check the changelog for further informations.
-
 - author: Lukas Ehnle <lukas.ehnle@aiesec.de>
 - author until v0.2: Karl Johann Schubert <karljohann@familieschubi.de>
 - version: 0.3
@@ -40,16 +38,16 @@ Every Authentication Provider has to provide the function `getToken()` and `getN
 * if you authenticate both active and non-active users: AuthProviderCombined
 * if you only need OP rights, or have only non-active users: AuthProviderOP
 
-Try to use AuthProviderEXPA and AuthProviderOP as much as possible. The AuthProviderCombined directly gives you the current person object and thereby validates if the token is an EXPA or OP token, but therefore he needs some more requests.
+Try to use AuthProviderEXPA and AuthProviderOP as much as possible. The AuthProviderCombined directly gives you the current person object and thereby validates if the token is an EXPA or OP token, but therefore it needs some more requests.
 
 Especially if you want to authenticate only active users, use AuthProviderEXPA and validate the token afterwards. The AuthProviderCombined would make a request more, to generate an OP token.
 
 ### Keep the GIS Identity session
-When a user access one of the frontends of the GIS he is redirected to the GIS Identity Service at auth.aiesec.org. This service opens a session for the user, whereby he do not need to login twice when he access another frontend. By now all three main Authentication Providers can make use of this session. On the one hand this can improve the performance of your script. On the other hand you can also generate an access token without saving the user credentials, just by keeping the session file.
+When a user access one of the frontends of the GIS he is redirected to the GIS Identity Service at auth.aiesec.org. This service opens a session for the user, whereby he does not need to login twice when he accesses another frontend. By now all three main Authentication Providers can make use of this session. On the one hand this can improve the performance of your script. On the other hand you can also generate an access token without saving the user credentials, just by keeping the session file.
 
 You can set the filepath of the session via the function `setSession($path)`. The function `getSession()` returns the current session path. The session file must not exist beforehand, but the directory and the file must be writeable for PHP.
 
-If you want to generate an access token from an existing session without having the user credentials, instantiate on of the standard AuthProviders with the filepath to the session as first parameter and leave the second parameter empty or set it to null. When the session file does not exist this will produce a E_USER_ERROR php error. If the session is invalid the generation of a token will throw a InvalidCredentials Exception.
+If you want to generate an access token from an existing session without having the user credentials, instantiate on of the standard AuthProviders with the filepath to the session as first parameter and leave the second parameter empty or set it to null. If the session file does not exist this will produce a E_USER_ERROR php error. If the session is invalid the generation of a token will throw a InvalidCredentials Exception.
 
 Please make sure to call the function `setSession($path)` before you generate any access token. Everything else will work, but could lead to a inconsistent behaviour.
 
@@ -63,22 +61,23 @@ Please make sure to call the function `setSession($path)` before you generate an
 - The `AuthProviderShadow` provides the function `getAuthProvider()`, which returns the underlaying AuthProvider or null
 
 ## Class GIS
-The class GIS is the entry point to access AIESECs Global Information System from your project. The first argument must be an AuthProvider. The second parameter can either be empty.
+The class GIS is the entry point to access AIESECs Global Information System from your project. The argument must be an AuthProvider.
 
-For simple projects it is fine to leave the second argument empty.
-```
+```php
 $user = new \GISwrapper\AuthProviderEXPA($username, $password);
 $gis = new \GISwrapper\GIS($user);
 ```
 
 ### Caching
-This new version does not need or support caching. As it does not parse a swagger file anymore.
+Version 0.3 does not need or support caching of the swagger file.
+It does not parse a swagger file anymore. Thus it does not have validation of endpoints and data types anymore, but improves performance.
 
 ## Data Access and Manipulation
 Please check the api documentation at https://gis-api.aiesec.org/swagger to get to know which endpoints exists. (<b>Attention:</b> make sure to change the file to the docs.json from v1 to v2)
 
 Starting from your instance of the GIS (e.g. $gis) every part after /v2/ of the path is turned into an object.
-```
+
+```php
 // /v2/opportunities.json
 $gis->opportunities;
 
@@ -93,14 +92,19 @@ $gis->opportunities->{opportunity_id}->progress
 There are two different kinds of endpoints. Those who return just one resource like /v2/current_person.json and those who return different pages each with a list of resources.
 
 To get data from the fist kind, just call the get method.
-```
+
+```php
 // /v2/current_person.json
 $res = $gis->current_person->get();
 print_r($res);
 ```
 
 The second kind of endpoint is accessable via an Iterator, so most probalby you want to use an foreach loop.
-```
+
+**Warning:**  
+This requests additional pages in the background, if necessary. So be sure to to break the loop as soon as possible
+
+```php
 // /v2/opportunities.json
 foreach($gis->opportunities as $o) {
     print_r($o);
@@ -110,40 +114,33 @@ foreach($gis->opportunities as $o) {
 ### Create a resource
 Please check the paragraph Parameters to get to know how to access the parameters of an endpoint. After you set all parameters which are necessary to create a new object call the `post()` function on that endpoint.
 
-Please check the examples folder for an script on how to create, update and delete a new opportunity.
+Please check the examples folder for a script on how to create, update and delete a new opportunity.
 
-Endpoints who support the creation of a new object are those who support the http method POST. Please check the respective endpoint documentation for the required parameters.
+For endpoints which support the creation of a new object (POST), please check the respective documentation for the required parameters.
 
 ### Update an existing resource
 After setting the necessary parameters on the endpoint you want to update, call the `patch()` method on that endpoint.
 
 Please check the examples folder for an script on how to create, update and delete a new opportunity.
 
-Endpoints who support updates, are those which support the http method PATCH. Please check the respective endpoint documentation for the required parameters.
+For endpoints which support updates (PATCH), please check the respective endpoint documentation for the required parameters.
 
 ### Delete a resource
 To delete an resource call the `delete()` method on that endpoint.
 
-Endpoint who support the delete methode are those which support the http method DELETE. Please check the api documentation to find those endpoints.
-
 ## Parameters
 Every Endpoint on the GIS API has parameters. Some parameters are already part of the path. Like already described those parameters turn into objects.
 
-The GIS wrapper already takes care of the parameters access_token, page and per_page. Thereby you can not access or change them.
+The GIS wrapper already takes care of the parameters access_token, page and per_page.
 
-All other parameters of the parameter type query and form turn into an associative array of the endpoint.
+All other parameters turn into an associative array of the endpoint.
 
 Let's take a look at the endpoint `/v2/opportunities.json`
-```
+
+```php
 $gis->opportunities[q] = "some String"; // set parameter q
-$gis->opportunities->[filters] = [
-    "organisation" => 10, // set parameter filters[organisation]
-    "issues" => [10, 20], // set elements of the array parameter filters[issues]
-    "skills" => [ // set the ids of elements of the array parameter filters[skills]
-        ["id" => 10],
-        ["id" => 20]
-    ]
-] 
+$gis->opportunities->[filters]["organisation"] = 10; // set parameter filters[organisation]
+$gis->opportunities->[filters]["issues"] = [10, 20]; // set elements of the array parameter filters[issues]
 ```
 
 ### setting many parameters at once
@@ -152,7 +149,8 @@ When you want to set many parameters at once without using the long notation wit
 When you assign an Array to an Endpoint or Parameter the value of each key will be assigned recursively to the sub endpoints and parameter named like the key. This does not work when you have a dynamic part of the path in your array, but as soon as you assign the equivalent array to the last dynamic endpoint it will work.
 
 The example from above would look like below
-```
+
+```php
 $gis->opportunities = [
     "q" => "some String",
     "filters" => [
