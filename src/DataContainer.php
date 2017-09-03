@@ -7,7 +7,7 @@ namespace GISwrapper;
  *
  * @author Lukas Ehnle <me@ehnle.fyi>
  * @package GISwrapper
- * @version 0.3
+ * @version 0.3.1
  */
 class DataContainer implements \Iterator
 {

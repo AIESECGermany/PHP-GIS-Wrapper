@@ -7,7 +7,7 @@ namespace GISwrapper;
  *
  * @author Lukas Ehnle <me@ehnle.fyi>
  * @package GISwrapper
- * @version 0.3
+ * @version 0.3.1
  */
 class GIS extends \OPRestclient\Client
 {   
@@ -15,6 +15,8 @@ class GIS extends \OPRestclient\Client
 
     // needed in data container, to load paged endpoints
     public $lastUrl;
+
+    private $tries = 0;
 
     /**
      * GIS constructor.
@@ -48,10 +50,24 @@ class GIS extends \OPRestclient\Client
     public function execute($url, $method='GET', $parameters=[], $headers=[]){
         $this->lastUrl = $url;
         $res = parent::execute($url, $method, $parameters, $headers);
-        if($res->error){
-            var_dump("Error");
+        if($res->info->http_code < 199 && $res->info->http_code < 300){
+            $this->tries = 0; //reset on success
+            return $res->decode_response();
         }
-        return $res->decode_response();
+        $this->tries++;// increase on fail
+        //stop after 3 tries
+        if($this->tries > 2){
+            throw new NoResponseException("Did not get response after 3 tries.");
+        }
+        // if unauthorized, retry with new access_token
+        if($res->info->http_code == 401){
+            $this->client->options['parameters']['access_token'] = $this->auth->getNewToken();
+            return $this->execute($url, $method, $parameters, $headers);
+        } elseif($res->info->http_code == 404){
+            throw new RequirementInvalidEndpointException($res->response);
+        } else {
+            throw new RequirementsException($res->response);
+        }
     }
 
     protected function decode($res){

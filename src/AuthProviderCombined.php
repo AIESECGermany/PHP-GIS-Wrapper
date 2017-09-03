@@ -329,7 +329,7 @@ class AuthProviderCombined implements AuthProvider {
      * check if token is valid by requesting the current person object
      *
      * @return bool
-     * @throws InvalidAPIResponseException
+     * @throws NoResponseException
      */
     private function requestCurrentPerson(){
         // prepare curl request
@@ -365,7 +365,7 @@ class AuthProviderCombined implements AuthProvider {
         curl_close($req);
 
         // throw exception if we did not get a result
-        throw new InvalidAPIResponseException("Could not load current person after 3 attempts.");
+        throw new NoResponseException("Could not load current person after 3 attempts.");
     }
 
 }
