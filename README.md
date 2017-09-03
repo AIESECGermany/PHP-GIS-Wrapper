@@ -6,7 +6,7 @@ It gives you the possibility to access every resource in the GIS as if it would 
 Version 0.3 is a partial rewrite with breaking changes in the acccess of endpoints, please check the documentation and test your application, if you update.
 
 - author: Lukas Ehnle <lukas.ehnle@aiesec.de>
-- author until v0.2: Karl Johann Schubert <karljohann@familieschubi.de>
+- author until v0.2.8: Karl Johann Schubert <karljohann@familieschubi.de>
 - version: 0.3
 
 # Documentation

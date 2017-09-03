@@ -5,68 +5,61 @@ namespace GISwrapper;
  * Class GIS
  * entry point to the GIS
  *
- * @author Lukas Ehnle <lukas.ehnle@aiesec.de>
+ * @author Lukas Ehnle <me@ehnle.fyi>
  * @package GISwrapper
  * @version 0.3
  */
-class GIS
-{
-    private $api;
+class GIS extends \OPRestclient\Client
+{   
+    private $auth;
+
+    // needed in data container, to load paged endpoints
+    public $lastUrl;
 
     /**
      * GIS constructor.
      * @param AuthProvider $auth
      * @throws InvalidAuthProviderException
-     * @throws NoResponseException
-     * @throws RequirementsException
+     * @throws InvalidAuthResponseException
+     * @throws InvalidCredentialsException
      */
-    function __construct($auth)
+    function __construct($auth, $baseUrl = 'https://gis-api.aiesec.org/v2')
     {
         // check that $auth implements the AuthProvider interface
         if ($auth instanceof AuthProvider) {
-            API::createInstance($auth);
-            $this->api = new APIEndpoint();
+            parent::__construct([
+                'base_url' => $baseUrl,
+                'parameters' => [
+                    'access_token' => $auth->getToken()
+                ],
+                'decoders' => ['json' => [$this, "decode"]]
+            ]);
+            $this->auth = $auth;
         } else {
             throw new InvalidAuthProviderException("The given object does not implement the AuthProvider interface.");
         }
     }
 
     /**
-     * @param mixed $name property name
-     * @return mixed value of the property
-     * @throws NoResponseException
-     * @throws RequirementsException
+     * overwrite parse_response, so errors can be handled and the response be decoded by default
+     * @param  GIS $res the GIS instance containing the response
+     * @return Object      the decoded response
      */
-    public function __get($name)
-    {
-        return $this->api->__get($name);
+    public function execute($url, $method='GET', $parameters=[], $headers=[]){
+        $this->lastUrl = $url;
+        $res = parent::execute($url, $method, $parameters, $headers);
+        if($res->error){
+            var_dump("Error");
+        }
+        return $res->decode_response();
     }
 
-    /**
-     * @param mixed $name name of the property
-     * @param mixed $value value to set for the property
-     * @throws NoResponseException
-     * @throws RequirementsException
-     */
-    public function __set($name, $value) {
-        return $this->api->__set($name, $value);
+    protected function decode($res){
+        $json = json_decode($res);
+        if(isset($json->data) && isset($json->paging)){
+            return new DataContainer($json, $this);
+        } else {
+            return $json;
+        }
     }
-
-    /**
-     * @param $name property name
-     * @return bool indicating if the property is instantiated
-     */
-    public function __isset($name)
-    {
-        return $this->api->__isset($name);
-    }
-
-    /**
-     * @param $name property name of the instance to be destroyed
-     */
-    public function __unset($name)
-    {
-        $this->api->__unset($name);
-    }
-
 }

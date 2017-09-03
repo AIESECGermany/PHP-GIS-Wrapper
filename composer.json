@@ -8,21 +8,15 @@
         },
         {
             "name": "Lukas Ehnke",
-            "email": "lukas.ehnle@aiesec.de"
+            "email": "me@ehnle.fyi"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/tcdent/php-restclient"
-        }
-    ],
-    "minimum-stability": "dev",
     "require": {
         "php": ">=5.4.0",
         "lib-curl": "*",
-        "tcdent/php-restclient": "dev-master"
+        "ocjojo/op-restclient": "dev-master"
     },
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "GISwrapper\\": "src/",
