@@ -50,7 +50,7 @@ class GIS extends \OPRestclient\Client
     public function execute($url, $method='GET', $parameters=[], $headers=[]){
         $this->lastUrl = $url;
         $res = parent::execute($url, $method, $parameters, $headers);
-        if($res->info->http_code < 199 && $res->info->http_code < 300){
+        if(199 < $res->info->http_code && $res->info->http_code < 300){
             $this->tries = 0; //reset on success
             return $res->decode_response();
         }
@@ -65,8 +65,10 @@ class GIS extends \OPRestclient\Client
             return $this->execute($url, $method, $parameters, $headers);
         } elseif($res->info->http_code == 404){
             throw new RequirementInvalidEndpointException($res->response);
+        } elseif(!$res->response) {
+            throw new NoResponseException($res->error);
         } else {
-            throw new RequirementsException($res->response);
+            throw new RequirementsException($res->resonse);
         }
     }
 
