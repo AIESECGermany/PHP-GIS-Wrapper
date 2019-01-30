@@ -234,7 +234,7 @@ class AuthProviderCombined implements AuthProvider {
             $res = curl_exec($req);
             if($res !== false) {
                 // try to find csrf token in response
-                preg_match( '/<meta\s*content="(.*)"\s*name="csrf-token"/', $res, $match );
+                preg_match('/<meta\s*name="csrf-token"\s*content="(.{88})"/', $res, $match);
 
                 // check for result
                 if(isset($match[1])) {
